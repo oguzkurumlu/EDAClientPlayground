@@ -4,6 +4,6 @@ namespace Playground.Core.Core
     {
         public string Key { get; set; }
 
-        public string Message { get; set; }
+        public object Message { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-Things to do
+# Things it does
 
 - A Chain of Resp for delivering a message to Kafka
 - Main purpose is to deliver the message to Kafka
@@ -6,29 +6,13 @@ Things to do
 - If rabbit mq fails, try file logger
 - Collect data on rabbitmq and log via kafka connect
 
+Demo preview 
 
+![demo](ss.jpg)
 
 # Kafka connect definition
 
 # rabbit primitive
-curl -X PUT http://localhost:8083/connectors/rmq-source/config \
-  -H "Content-Type: application/json" \
-  -d '{
-    "connector.class": "com.github.jcustenborder.kafka.connect.rabbitmq.RabbitMQSourceConnector",
-    "tasks.max": "1",
-    "rabbitmq.host": "rabbitmq",
-    "rabbitmq.port": "5672",
-    "rabbitmq.username": "guest",
-    "rabbitmq.password": "guest",
-    "rabbitmq.virtual.host": "/",
-    "rabbitmq.queue": "events",
-    "kafka.topic": "rmq.events",
-    "value.converter": "org.apache.kafka.connect.storage.StringConverter",
-    "key.converter": "org.apache.kafka.connect.storage.StringConverter"
-  }'
-
-
-# rabbit
   curl -X PUT http://localhost:8083/connectors/rmq-source/config \
   -H "Content-Type: application/json" \
   -d '{
@@ -40,7 +24,7 @@ curl -X PUT http://localhost:8083/connectors/rmq-source/config \
     "rabbitmq.password": "guest",
     "rabbitmq.virtual.host": "/",
     "rabbitmq.queue": "kafka_events",
-    "kafka.topic": "rmq.events",
+    "kafka.topic": "moneytransfer",
 
     "key.converter": "org.apache.kafka.connect.storage.StringConverter",
     "value.converter": "org.apache.kafka.connect.storage.StringConverter",
@@ -50,6 +34,49 @@ curl -X PUT http://localhost:8083/connectors/rmq-source/config \
     "transforms.k1.header.name": "kafka_key"
   }'
 
+
+# rabbit
+
+curl -X PUT "http://localhost:8083/connectors/rmq-source/config" \
+  -H "Content-Type: application/json" \
+  --data-binary '{
+    "connector.class": "com.github.jcustenborder.kafka.connect.rabbitmq.RabbitMQSourceConnector",
+    "tasks.max": "1",
+    "rabbitmq.host": "rabbitmq",
+    "rabbitmq.port": "5672",
+    "rabbitmq.username": "guest",
+    "rabbitmq.password": "guest",
+    "rabbitmq.virtual.host": "/",
+    "rabbitmq.queue": "kafka_events",
+    "kafka.topic": "moneytransfer",
+
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "false",
+
+    "transforms": "keyFromHeader,onlyBody,bytes2str,fromJson",
+
+    "transforms.keyFromHeader.type": "com.github.jcustenborder.kafka.connect.rabbitmq.ExtractHeader$Key",
+    "transforms.keyFromHeader.header.name": "kafka_key",
+
+    "transforms.onlyBody.type": "org.apache.kafka.connect.transforms.ExtractField$Value",
+    "transforms.onlyBody.field": "body",
+
+    "transforms.bytes2str.type": "com.github.jcustenborder.kafka.connect.transform.common.BytesToString$Value",
+    "transforms.bytes2str.charset": "UTF-8",
+
+    "transforms.fromJson.type": "com.github.jcustenborder.kafka.connect.json.FromJson$Value",
+    "transforms.fromJson.json.schema.location": "Inline",
+    "transforms.fromJson.json.schema.inline":
+      "{ \"type\":\"object\", \"properties\": { \"From\":{\"type\":\"string\"}, \"To\":{\"type\":\"string\"}, \"Amount\":{\"type\":\"number\"}, \"DateTime\":{\"type\":\"string\"} }, \"required\":[\"From\",\"To\",\"Amount\",\"DateTime\"] }",
+
+    "errors.tolerance": "all",
+    "errors.log.enable": "true",
+    "errors.log.include.messages": "true"
+  }'
+
+
+
  # file
 
 curl -X PUT "http://localhost:8083/connectors/file-source/config" \
@@ -58,7 +85,7 @@ curl -X PUT "http://localhost:8083/connectors/file-source/config" \
     "connector.class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
     "tasks.max": "1",
     "file": "/data/input.txt",
-    "topic": "rmq.events",
+    "topic": "moneytransfer",
 
     "key.converter": "org.apache.kafka.connect.storage.StringConverter",
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
@@ -68,10 +95,16 @@ curl -X PUT "http://localhost:8083/connectors/file-source/config" \
     "transforms.fromJson.type": "com.github.jcustenborder.kafka.connect.json.FromJson$Value",
     "transforms.fromJson.json.schema.location": "Inline",
     "transforms.fromJson.json.schema.inline":
-      "{ \"type\":\"object\", \"properties\": { \"Key\": {\"type\":\"string\"}, \"Message\": {\"type\":\"string\"} }, \"required\": [\"Key\",\"Message\"] }",
+      "{ \"type\":\"object\", \"properties\": { \"Key\": {\"type\":\"string\"}, \"Message\": {\"type\":\"object\", \"properties\": { \"From\": {\"type\":\"string\"}, \"To\": {\"type\":\"string\"}, \"Amount\": {\"type\":\"number\"}, \"DateTime\": {\"type\":\"string\"} }, \"required\": [\"From\",\"To\",\"Amount\",\"DateTime\"] } }, \"required\": [\"Key\",\"Message\"] }",
 
     "transforms.makeKey.type": "org.apache.kafka.connect.transforms.ValueToKey",
     "transforms.makeKey.fields": "Key",
     "transforms.extractKey.type": "org.apache.kafka.connect.transforms.ExtractField$Key",
     "transforms.extractKey.field": "Key"
   }'
+
+
+
+# Things to do
+- [ ] Fix connections with the best practices. 
+- [ ] Auto set of kafka connect settings

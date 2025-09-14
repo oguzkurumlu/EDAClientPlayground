@@ -39,7 +39,7 @@ namespace Playground.Core.RabbitMQ
                 ["kafka_key"] = message.Key
             };
 
-            var serializedMessage = JsonSerializer.Serialize(message);
+            var serializedMessage = JsonSerializer.Serialize(message.Message);
             var encodedMessage = Encoding.UTF8.GetBytes(serializedMessage);
 
             await channel.BasicPublishAsync(exchange: string.Empty, routingKey: queue, mandatory:true, basicProperties: props, body: encodedMessage);

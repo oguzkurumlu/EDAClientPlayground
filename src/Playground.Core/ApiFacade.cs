@@ -14,7 +14,7 @@ namespace Playground.Core
 
         private ProducerConfig config = new ProducerConfig
         {
-            BootstrapServers = "asdasdlocalhost:9092",
+            BootstrapServers = "localhost:9092",
 
             EnableIdempotence = false,
             MessageSendMaxRetries = 0,
@@ -29,7 +29,7 @@ namespace Playground.Core
 
         public ApiFacade()
         {
-            deliver = new ChainDecorator(new KafkaDeliver("eda_client", config), new ChainDecorator(new RabbitDeliver("localhost22", "kafka_events"), new FileDeliver("kafka.log")));
+            deliver = new ChainDecorator(new KafkaDeliver("moneytransfer", config), new ChainDecorator(new RabbitDeliver("localhost", "kafka_events"), new FileDeliver("kafka.log")));
         }
 
         public async Task SendAsync(IMessage message)
