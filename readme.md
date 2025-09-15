@@ -92,19 +92,24 @@ curl -X PUT "http://localhost:8083/connectors/file-source/config" \
     "value.converter.schemas.enable": "false",
 
     "transforms": "fromJson,makeKey,extractKey",
+
     "transforms.fromJson.type": "com.github.jcustenborder.kafka.connect.json.FromJson$Value",
     "transforms.fromJson.json.schema.location": "Inline",
     "transforms.fromJson.json.schema.inline":
-      "{ \"type\":\"object\", \"properties\": { \"Key\": {\"type\":\"string\"}, \"Message\": {\"type\":\"object\", \"properties\": { \"From\": {\"type\":\"string\"}, \"To\": {\"type\":\"string\"}, \"Amount\": {\"type\":\"number\"}, \"DateTime\": {\"type\":\"string\"} }, \"required\": [\"From\",\"To\",\"Amount\",\"DateTime\"] } }, \"required\": [\"Key\",\"Message\"] }",
+      "{ \"type\":\"object\", \"properties\": { \"From\": {\"type\":\"string\"}, \"To\": {\"type\":\"string\"}, \"Amount\": {\"type\":\"number\"}, \"DateTime\": {\"type\":\"string\"} }, \"required\": [\"From\",\"To\",\"Amount\",\"DateTime\"] }",
 
     "transforms.makeKey.type": "org.apache.kafka.connect.transforms.ValueToKey",
-    "transforms.makeKey.fields": "Key",
+    "transforms.makeKey.fields": "From",
+
     "transforms.extractKey.type": "org.apache.kafka.connect.transforms.ExtractField$Key",
-    "transforms.extractKey.field": "Key"
+    "transforms.extractKey.field": "From"
   }'
+
 
 
 
 # Things to do
 - [ ] Fix connections with the best practices. 
 - [ ] Auto set of kafka connect settings
+- [X] Collect those kafka events to a projection db
+- [ ] Make them dispossible

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Playground.Core.Core
+﻿namespace Playground.Core.Core
 {
     public class EventMessage : IMessage
     {

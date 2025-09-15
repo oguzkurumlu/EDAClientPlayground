@@ -56,6 +56,23 @@ services:
       - ./connect-plugins:/kafka/connect
       - ./demo/ProducerDemo/bin/Debug/net9.0/kafka.log:/data/input.txt:ro
 
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    ports: ["5432:5432"]
+    environment:
+      POSTGRES_USER: debezium
+      POSTGRES_PASSWORD: debezium
+      POSTGRES_DB: corebank
+    command: >
+      -c wal_level=logical
+      -c max_wal_senders=10
+      -c max_replication_slots=10
+      -c wal_keep_size=64
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
 volumes:
   kafka_data:
+  pg_data:

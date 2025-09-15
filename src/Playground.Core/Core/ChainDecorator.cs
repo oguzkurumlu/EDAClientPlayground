@@ -1,30 +1,35 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Playground.Core.Core
 {
-    public class ChainDecorator : IDeliver
+    public class ChainDecorator : IDeliverer
     {
-        private readonly IDeliver first;
-        private readonly IDeliver second;
+        private readonly IDeliverer first;
+        private readonly IDeliverer second;
 
-        public ChainDecorator(IDeliver first, IDeliver second)
+        public ChainDecorator(IDeliverer first, IDeliverer second)
         {
             this.first = first;
             this.second = second;
         }
 
-        public async Task SendAsync(IMessage message)
+        public void Dispose()
+        {
+            first.Dispose(); 
+            second.Dispose();
+        }
+
+        public async Task SendAsync(IMessage message, CancellationToken cancellationToken)
         {
             try
             {
-                await first.SendAsync(message);
+                await first.SendAsync(message, cancellationToken);
             }
             catch (Exception)
             {
-                await second.SendAsync(message);
+                await second.SendAsync(message, cancellationToken);
             }
         }
     }

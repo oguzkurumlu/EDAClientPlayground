@@ -1,0 +1,9 @@
+CREATE SCHEMA IF NOT EXISTS public;
+
+CREATE TABLE IF NOT EXISTS public.calender (
+  id BIGSERIAL PRIMARY KEY,
+  account CHAR(255) NOT NULL,
+  debit_credit BOOLEAN,
+  amount NUMERIC(18,2) NOT NULL DEFAULT 0,
+  process_time TIMESTAMPTZ NOT NULL DEFAULT now()
+);

@@ -27,7 +27,7 @@ class Program
                         Amount = 999
                     }
                 };
-                await apiFacade.SendAsync(message);
+                await apiFacade.SendAsync(message, CancellationToken.None);
             }
             catch (ProduceException<string, string> ex)
             {

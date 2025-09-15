@@ -1,16 +1,17 @@
 ﻿using Confluent.Kafka;
 using Playground.Core.Core;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Playground.Core.Kafka
 {
-    public class KafkaDeliver : IDeliver
+    public class KafkaDeliverer : IDeliverer
     {
         private readonly IProducer<string, object> producer;
         private readonly string topic;
 
-        public KafkaDeliver(string topic, ProducerConfig producerConfig)
+        public KafkaDeliverer(string topic, ProducerConfig producerConfig)
         {
             producer = new ProducerBuilder<string, object>(producerConfig)
                 .SetValueSerializer(new ObjectJsonSerializer())
@@ -18,13 +19,18 @@ namespace Playground.Core.Kafka
             this.topic = topic;
         }
 
-        public async Task SendAsync(IMessage message)
+        public void Dispose()
+        {
+            producer.Dispose();
+        }
+
+        public async Task SendAsync(IMessage message, CancellationToken cancellationToken)
         {
             var kafkaMessage = new Message<string, object>();
             kafkaMessage.Value = message.Message;
             kafkaMessage.Key = message.Key;
 
-            var deliveryResult = await producer.ProduceAsync(topic, kafkaMessage);
+            var deliveryResult = await producer.ProduceAsync(topic, kafkaMessage, cancellationToken);
 
             if(deliveryResult.Status == PersistenceStatus.NotPersisted)
             {

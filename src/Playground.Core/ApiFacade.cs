@@ -4,13 +4,14 @@ using Playground.Core.File;
 using Playground.Core.Kafka;
 using Playground.Core.RabbitMQ;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Playground.Core
 {
     public class ApiFacade
     {
-        private readonly IDeliver deliver;
+        private readonly IDeliverer deliver;
 
         private ProducerConfig config = new ProducerConfig
         {
@@ -29,12 +30,12 @@ namespace Playground.Core
 
         public ApiFacade()
         {
-            deliver = new ChainDecorator(new KafkaDeliver("moneytransfer", config), new ChainDecorator(new RabbitDeliver("localhost", "kafka_events"), new FileDeliver("kafka.log")));
+            deliver = new CancellationCheckDecorator(new ChainDecorator(new KafkaDeliverer("moneytransfer", config), new ChainDecorator(new RabbitDeliverer("localhost", "kafka_events"), new FileDeliverer("kafka.log"))));
         }
 
-        public async Task SendAsync(IMessage message)
+        public async Task SendAsync(IMessage message, CancellationToken cancellation)
         {
-            await deliver.SendAsync(message);
+            await deliver.SendAsync(message, cancellation);
         }
     }
 }
