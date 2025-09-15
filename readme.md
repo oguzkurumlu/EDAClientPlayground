@@ -4,7 +4,9 @@
 - Main purpose is to deliver the message to Kafka
 - If Kafka deliver fails, try rabbit mq
 - If rabbit mq fails, try file logger
-- Collect data on rabbitmq and log via kafka connect
+- Collects data on rabbitmq and from log via Kafka Connect
+- Consumer consumes Kafka messages and inserts it to Postgress
+
 
 Demo preview 
 
